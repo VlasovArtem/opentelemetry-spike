@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logging
+  labels:
+    app: logging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logging
+  template:
+    metadata:
+      labels:
+        app: logging
+
+    spec:
+      containers:
+        - name: logging
+          image: spike/logging:v1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+        - name: otel-sidecar
+          image: test
+          imagePullPolicy: Always
+          
