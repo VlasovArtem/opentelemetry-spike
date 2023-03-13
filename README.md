@@ -1,4 +1,10 @@
 # OpenTelemetry Spike
+## How to run
+For file exporter
+```shell
+cd pkg && go run . -t file
+```
+## Usage
 Usage:
 pkg [OPTIONS]
 

@@ -42,7 +42,9 @@ func main() {
 	defer initGlobalLogging()()
 
 	r := gin.Default()
+
 	r.Use(otelgin.Middleware("application"))
+
 	r.GET("/ping", ping())
 	r.POST("/data", insertData())
 	r.Run(":8080")
@@ -65,7 +67,7 @@ func insertData() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		ctx := context.Request.Context()
 		span := trace.SpanFromContext(ctx)
-		span.AddEvent("Inserting data")
+		span.AddEvent("Inserting data with name")
 		var request insertDataRequest
 		err := context.Bind(&request)
 		if err != nil {
