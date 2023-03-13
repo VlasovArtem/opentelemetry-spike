@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/jessevdk/go-flags"
 	"github.com/uptrace/opentelemetry-go-extra/otelzap"
@@ -9,35 +10,36 @@ import (
 	"go.uber.org/zap"
 	"log"
 	"net/http"
-	"os"
 )
 
 type opts struct {
-	exporterType string `short:"type" long:"type" required:"true" description:"type of exporter: file or grpc" choice:"file" choice:"grpc"`
-	collector    struct {
-		url      string `short:"url" long:"url" description:"collector url"`
-		insecure bool   `short:"insecure" long:"insecure" description:"collector grpc insecure" default:"false"`
+	ExporterType string `short:"t" long:"type" required:"true" description:"type of exporter: file or grpc" choice:"file" choice:"grpc"`
+	Collector    struct {
+		Url      string `short:"u" long:"url" description:"collector url"`
+		Insecure bool   `short:"i" long:"insecure" description:"collector grpc insecure"`
 	} `group:"collector" namespace:"collector"`
 }
 
 func main() {
 	opts := opts{}
-	_, err := flags.ParseArgs(&opts, os.Args)
+	_, err := flags.Parse(&opts)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	switch opts.exporterType {
+	switch opts.ExporterType {
 	case "file":
-		defer initFileTracer()
+		defer initFileTracer()(context.Background())
+		log.Println("Starting application with file exporter. Check 'traces.txt' file for traces")
 	case "grpc":
-		defer initGrpcTracer(opts.collector.url, opts.collector.insecure)
+		defer initGrpcTracer(opts.Collector.Url, opts.Collector.Insecure)(context.Background())
+		log.Println("Starting application with grpc exporter.")
 	default:
 		log.Fatal("Invalid type")
 	}
-	
-	defer initGlobalLogging()
+
+	defer initGlobalLogging()()
 
 	r := gin.Default()
 	r.Use(otelgin.Middleware("application"))
