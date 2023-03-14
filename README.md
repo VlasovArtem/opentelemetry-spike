@@ -1,35 +1,37 @@
 # OpenTelemetry Spike
-## How to run
-For file exporter
+## Build and run
+Run mod tidy in the root of the project
 ```shell
-cd pkg && go run . -t file
+go mod tidy
 ```
-## Usage
-Usage:
-pkg [OPTIONS]
+### Using docker
+Build app docker images
+```shell
+make buildAllImages
+```
+Run required services
+```shell
+make runRequiredServices
+```
+Run application
+```shell
+make run
+```
+## How to use
+After you run the application you can send a request to the endpoint
+```shell
+curl -X POST http://localhost:8080/data -d '{"name": "test"}'
+```
+### Flow
+1. The `main-app` sends a message to kafka
+2. The `processor-app` reads a message from kafka and save into the memory
 
-Application Options:
--t, --type=[file|grpc]    type of exporter: file or grpc
-
-collector:
--u, --collector.url=      collector url
--i, --collector.insecure  collector grpc insecure
-
-Help Options:
--h, --help                Show this help message
-
-2023/03/13 15:22:17 Usage:
-pkg [OPTIONS]
-
-Application Options:
--t, --type=[file|grpc]    type of exporter: file or grpc
-
-collector:
--u, --collector.url=      collector url
--i, --collector.insecure  collector grpc insecure
-
-Help Options:
--h, --help                Show this help message
+## How to check
+### Jaeger
+Open Jaeger UI
+```shell
+open http://localhost:16686/
+```
 ## Example output for file exporter
 Without error
 ```json

@@ -1,4 +1,4 @@
-package main
+package opentelemetry
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"io"
 )
 
-func newWriterExporter(w io.Writer) (sdk_trace.SpanExporter, error) {
+func NewWriterExporter(w io.Writer) (sdk_trace.SpanExporter, error) {
 	return stdouttrace.New(
 		stdouttrace.WithWriter(w),
 		// Use human-readable output.
@@ -20,7 +20,7 @@ func newWriterExporter(w io.Writer) (sdk_trace.SpanExporter, error) {
 	)
 }
 
-func newGrpcExporter(collectorURL string, insecure bool) (sdk_trace.SpanExporter, error) {
+func NewGrpcExporter(collectorURL string, insecure bool) (sdk_trace.SpanExporter, error) {
 	secureOption := otlptracegrpc.WithTLSCredentials(credentials.NewClientTLSFromCert(nil, ""))
 	if insecure {
 		secureOption = otlptracegrpc.WithInsecure()
