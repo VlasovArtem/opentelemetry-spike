@@ -9,13 +9,34 @@ Build app docker images
 ```shell
 make buildAllImages
 ```
+Create external network
+```shell
+make createExternalNetwork
+```
 Run required services
 ```shell
 make runRequiredServices
 ```
 Run application
 ```shell
-make run
+make runAppDocker
+```
+### Locally
+Create external network
+```shell
+make createExternalNetwork
+```
+Run required services
+```shell
+make runRequiredServices
+```
+Run main application 
+```shell
+make runMain
+```
+Run processor application
+```shell
+make runProcessor
 ```
 ## How to use
 After you run the application you can send a request to the endpoint

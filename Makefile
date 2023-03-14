@@ -7,6 +7,9 @@ PROCESSOR_APP_IMG := $(PROCESSOR_APP_NAME):$(PROCESSOR_APP_VERSION)
 
 default: help
 
+init: ## Init project
+	@go mod tidy
+
 buildAllImages: buildMainImg buildProcessorImg ## Build Main and Processor Images
 
 buildMainImg: ## Build Main Image
@@ -15,14 +18,19 @@ buildMainImg: ## Build Main Image
 buildProcessorImg: ## Build Processor (secondary) Image
 	@docker build -t $(PROCESSOR_APP_IMG) -f ./pkg/processor/Dockerfile .
 
-run: ## Run App
-	@docker-compose -f ./docker-compose.yml up -d
+createExternalNetwork: ## Create external network
+	@docker network create external-network
 
-runRequiredServices: ## Run Required Services (Jaeger, Kafka, OpenTelemetry)
+runMain: ## Run Main App
+	@cd ./pkg/main && go run . --type=grpc --collector.url=localhost:4317 --collector.insecure=true --kafka.address=localhost:9092 --kafka.topic=add.data
+
+runProcessor: ## Run Main App
+	@cd ./pkg/processor && go run . --type=grpc --collector.url=localhost:4317 --collector.insecure=true --kafka.address=localhost:9092 --kafka.topic=add.data
+
+run: ## Run All Services
 	@docker-compose -f ./deployments/docker-compose.yml up -d
 
 clean: ## Clean docker
-	@docker-compose -f ./docker-compose.yml up -d
 	@docker-compose -f ./deployments/docker-compose.yml down
 
 help:

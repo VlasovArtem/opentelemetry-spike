@@ -32,6 +32,9 @@ func main() {
 
 	log.Info().Msg("Starting processor app loop")
 
+	log.Info().Msg("Creating kafka connection")
+	log.Info().Msgf("Kafka Configuration %v", common.GlobalOpts.Kafka)
+
 	connection := common.NewKafkaConnection(
 		"tcp",
 		common.GlobalOpts.Kafka.Address,

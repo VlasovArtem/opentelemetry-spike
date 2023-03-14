@@ -3,8 +3,6 @@ services:
   jaeger:
     image: jaegertracing/all-in-one:latest
     container_name: jaeger
-    networks:
-      - test
     ports:
       - "16686:16686"
       - "14250"
@@ -15,8 +13,6 @@ services:
     image: otel/opentelemetry-collector
     container_name: otel-collector
     command: [ --config=/etc/otel-collector-config.yaml ]
-    networks:
-      - test
     depends_on:
       - jaeger
     volumes:
@@ -33,18 +29,13 @@ services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.3.2
     container_name: zookeeper
-    networks:
-      - test
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
 
-
   broker:
     image: confluentinc/cp-kafka:7.3.2
     container_name: broker
-    networks:
-      - test
     ports:
       # To learn about configuring Kafka for access across networks see
       # https://www.confluent.io/blog/kafka-client-cannot-connect-to-broker-on-aws-on-docker-etc/
@@ -59,6 +50,36 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: ["CMD", "nc", "-vz", "localhost", "9092"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
 
-networks:
-  test:
+  main:
+    image: main-app:v0.0.1
+    container_name: main-app
+    depends_on:
+      broker:
+        condition: service_healthy
+    environment:
+      - EXPORTER_TYPE=grpc
+      - COLLECTOR_URL=otel-collector:4317
+      - COLLECTOR_INSECURE=true
+      - KAFKA_ADDRESS=broker:29092
+      - KAFKA_TOPIC=test-topic
+    ports:
+      - "8080:8080"
+
+  processor:
+    image: processor-app:v0.0.1
+    container_name: processor-app
+    depends_on:
+      broker:
+        condition: service_healthy
+    environment:
+      - EXPORTER_TYPE=grpc
+      - COLLECTOR_URL=otel-collector:4317
+      - COLLECTOR_INSECURE=true
+      - KAFKA_ADDRESS=broker:29092
+      - KAFKA_TOPIC=test-topic

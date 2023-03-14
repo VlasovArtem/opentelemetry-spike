@@ -17,6 +17,4 @@ FROM alpine as main
 
 COPY --from=builder /app/app /bin/app
 
-EXPOSE 8080
-
 ENTRYPOINT [ "/bin/app" ]
