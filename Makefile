@@ -18,17 +18,17 @@ buildMainImg: ## Build Main Image
 buildProcessorImg: ## Build Processor (secondary) Image
 	@docker build -t $(PROCESSOR_APP_IMG) -f ./pkg/processor/Dockerfile .
 
-createExternalNetwork: ## Create external network
-	@docker network create external-network
-
 runMain: ## Run Main App
-	@cd ./pkg/main && go run . --type=grpc --collector.url=localhost:4317 --collector.insecure=true --kafka.address=localhost:9092 --kafka.topic=add.data
+	@cd ./pkg/main && go run . --type=grpc --collector.url=localhost:4317 --collector.insecure --kafka.address=localhost:9092 --kafka.topic=add.data
 
 runProcessor: ## Run Main App
-	@cd ./pkg/processor && go run . --type=grpc --collector.url=localhost:4317 --collector.insecure=true --kafka.address=localhost:9092 --kafka.topic=add.data
+	@cd ./pkg/processor && go run . --type=grpc --collector.url=localhost:4317 --collector.insecure --kafka.address=localhost:9092 --kafka.topic=add.data
 
 run: ## Run All Services
 	@docker-compose -f ./deployments/docker-compose.yml up -d
+
+runRequiredService: ## Run Required Services
+	@docker-compose -f ./deployments/docker-compose.yml up -d jaeger otel-collector zookeeper broker
 
 clean: ## Clean docker
 	@docker-compose -f ./deployments/docker-compose.yml down

@@ -22,7 +22,8 @@ func insertData(parentCtx context.Context, name string) error {
 		return err
 	}
 
-	span := trace.SpanFromContext(parentCtx)
+	_, span := tracer.Start(parentCtx, "insertData", trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
 	span.AddEvent(
 		"Inserting data",
 		trace.WithAttributes(

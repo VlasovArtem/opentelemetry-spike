@@ -5,20 +5,20 @@ import (
 	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
 	"github.com/uptrace/opentelemetry-go-extra/otelzap"
-	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	"spike-go-opentelemetry-logging/pkg/common"
+	"spike-go-opentelemetry-logging/pkg/opentelemetry"
 )
 
 func sendMessage(request insertDataRequest, parentCtx context.Context) error {
 	conversationId := uuid.New().String()
-	_, span := tracer.Start(parentCtx, "add.data publish",
-		trace.WithAttributes(
-			attribute.String("name", request.Name),
-			attribute.String("messaging.system", "kafka"),
-			attribute.String("messaging.operation", "publish"),
-			attribute.String("messaging.message.conversation_id", conversationId),
+	currentContext, span := tracer.Start(parentCtx, "kafka.producer",
+		common.CreateRequiredKafkaOtelProducerAttributes(
+			common.GlobalOpts.Kafka.Topic,
+			0,
+			conversationId,
 		),
 		trace.WithSpanKind(trace.SpanKindProducer),
 	)
@@ -31,8 +31,11 @@ func sendMessage(request insertDataRequest, parentCtx context.Context) error {
 		common.GlobalOpts.Kafka.Partition,
 	)
 
+	message := createMessage(request, conversationId)
+	messageCarrier := opentelemetry.NewMessageCarrier(&message)
+	otel.GetTextMapPropagator().Inject(currentContext, messageCarrier)
 	common.WriteMessages(newConnection, []kafka.Message{
-		createMessage(request, conversationId),
+		message,
 	})
 
 	err := newConnection.Close()

@@ -54,10 +54,10 @@ func main() {
 		if err != nil {
 			log.Error().Err(err)
 		} else {
-			span := trace.SpanFromContext(ctx)
-			err := insertData(ctx, request.name)
+			parent, span := tracer.Start(ctx, "insertData")
+			err := insertData(parent, request.name)
 			if err != nil {
-				otelzap.Ctx(ctx).Error("Error binding request", zap.Error(err))
+				otelzap.Ctx(parent).Error("Error binding request", zap.Error(err))
 				span.RecordError(err)
 			}
 			span.End()

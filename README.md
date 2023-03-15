@@ -9,17 +9,9 @@ Build app docker images
 ```shell
 make buildAllImages
 ```
-Create external network
+Run all applications
 ```shell
-make createExternalNetwork
-```
-Run required services
-```shell
-make runRequiredServices
-```
-Run application
-```shell
-make runAppDocker
+make run
 ```
 ### Locally
 Create external network

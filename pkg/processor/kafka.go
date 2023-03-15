@@ -4,13 +4,14 @@ import (
 	"context"
 	"github.com/rs/zerolog/log"
 	"github.com/segmentio/kafka-go"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
+	"spike-go-opentelemetry-logging/pkg/common"
+	"spike-go-opentelemetry-logging/pkg/opentelemetry"
 )
 
 func receiveRequest(conn *kafka.Conn) (insertDataRequest, context.Context, error) {
-	log.Info().Msg("Waiting for message...")
-
 	// We need to decide should we create a new span for each message or not
 	message, err := conn.ReadMessage(1e3)
 	if err != nil {
@@ -18,14 +19,18 @@ func receiveRequest(conn *kafka.Conn) (insertDataRequest, context.Context, error
 		return insertDataRequest{}, nil, err
 	}
 
-	ctx, span := tracer.Start(context.TODO(), "add.data receive",
+	ctx := otel.GetTextMapPropagator().Extract(context.Background(), opentelemetry.NewMessageCarrier(&message))
+
+	_, span := tracer.Start(ctx, "kafka.consumer",
 		trace.WithSpanKind(trace.SpanKindConsumer),
-		trace.WithAttributes(
-			attribute.String("messaging.system", "kafka"),
-			attribute.String("messaging.operation", "receive"),
-			attribute.String("messaging.message.conversation_id", findConversationId(message.Headers)),
+		common.CreateRequiredKafkaOtelConsumerAttributes(
+			common.GlobalOpts.Kafka.Topic,
+			0,
+			findConversationId(message.Headers),
 		),
 	)
+
+	defer span.End()
 
 	request := insertDataRequest{
 		name: string(message.Value),
