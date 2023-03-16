@@ -1,0 +1,105 @@
+{
+  "data": [
+    {
+      "traceID": "bfbd6749137d8f50ddc2a4c7757baf2a",
+      "spans": [
+        {
+          "traceID": "bfbd6749137d8f50ddc2a4c7757baf2a",
+          "spanID": "8a6a4638d0fdd792",
+          "operationName": "kafka.producer",
+          "references": [
+            {
+              "refType": "CHILD_OF",
+              "traceID": "bfbd6749137d8f50ddc2a4c7757baf2a",
+              "spanID": "b2d6d1b359386998"
+            }
+          ],
+          "startTime": 1678967462708315,
+          "duration": 117457,
+          "tags": [
+            {
+              "key": "otel.library.name",
+              "type": "string",
+              "value": "handler-app"
+            },
+            {
+              "key": "messaging.system",
+              "type": "string",
+              "value": "kafka"
+            },
+            {
+              "key": "messaging.destination_kind",
+              "type": "string",
+              "value": "topic"
+            },
+            {
+              "key": "messaging.destination",
+              "type": "string",
+              "value": "test-topic"
+            },
+            {
+              "key": "messaging.message_id",
+              "type": "string",
+              "value": "b94f9cd3-6529-4bc0-a0ee-1d35f4d79c8d"
+            },
+            {
+              "key": "messaging.kafka.partition",
+              "type": "int64",
+              "value": 0
+            },
+            {
+              "key": "span.kind",
+              "type": "string",
+              "value": "producer"
+            },
+            {
+              "key": "internal.span.format",
+              "type": "string",
+              "value": "proto"
+            }
+          ],
+          "logs": [],
+          "processID": "p2",
+          "warnings": null
+        }
+      ],
+      "processes": {
+        "p1": {
+          "serviceName": "processor-app",
+          "tags": [
+            {
+              "key": "environment",
+              "type": "string",
+              "value": "demo"
+            },
+            {
+              "key": "service.version",
+              "type": "string",
+              "value": "v0.1.0"
+            }
+          ]
+        },
+        "p2": {
+          "serviceName": "handler-app",
+          "tags": [
+            {
+              "key": "environment",
+              "type": "string",
+              "value": "demo"
+            },
+            {
+              "key": "service.version",
+              "type": "string",
+              "value": "v0.1.0"
+            }
+          ]
+        }
+      },
+      "warnings": null
+    }
+  ],
+  "total": 0,
+  "limit": 0,
+  "offset": 0,
+  "errors": null
+}
