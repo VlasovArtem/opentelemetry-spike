@@ -83,3 +83,4 @@ services:
       - COLLECTOR_INSECURE=true
       - KAFKA_ADDRESS=broker:29092
       - KAFKA_TOPIC=test-topic
+      - EXECUTOR_BASE_PATH=/bin

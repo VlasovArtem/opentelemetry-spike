@@ -3,34 +3,31 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/rs/zerolog/log"
+	"github.com/uptrace/opentelemetry-go-extra/otelzap"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
+	"go.uber.org/zap"
 )
 
-type data struct {
-	name string
-}
+var inmemory = make(map[string]insertDataRequest)
 
-var inmemory = make(map[string]data)
+func insertData(parentCtx context.Context, request insertDataRequest) error {
+	ctx, span := tracer.Start(parentCtx, "insertData",
+		trace.WithSpanKind(trace.SpanKindServer),
+		trace.WithAttributes(
+			attribute.String("name", request.Name),
+		),
+	)
+	defer span.End()
+	otelzap.Ctx(ctx).ZapLogger().Info("Inserting data", zap.String("name", request.Name))
 
-func insertData(parentCtx context.Context, name string) error {
-	log.Info().Msg("Inserting data")
-
-	if _, ok := inmemory[name]; ok {
+	if _, ok := inmemory[request.Name]; ok {
 		err := errors.New("data already exists")
+		otelzap.L().Error("Data already exists", zap.String("name", request.Name))
+		span.RecordError(err)
 		return err
 	}
 
-	_, span := tracer.Start(parentCtx, "insertData", trace.WithSpanKind(trace.SpanKindServer))
-	defer span.End()
-	span.AddEvent(
-		"Inserting data",
-		trace.WithAttributes(
-			attribute.String("name", name),
-		),
-	)
-
-	inmemory[name] = data{name: name}
+	inmemory[request.Name] = request
 	return nil
 }

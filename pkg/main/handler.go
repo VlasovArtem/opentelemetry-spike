@@ -27,13 +27,12 @@ func ping() gin.HandlerFunc {
 }
 
 type insertDataRequest struct {
-	Name string `json:"name"`
+	Name   string `json:"name"`
+	Random int    `json:"random"`
 }
 
 func insertData() gin.HandlerFunc {
 	return func(context *gin.Context) {
-		ctx := context.Request.Context()
-		span := trace.SpanFromContext(ctx)
 		var request insertDataRequest
 		err := context.Bind(&request)
 		if err != nil {
@@ -42,6 +41,8 @@ func insertData() gin.HandlerFunc {
 				"message": "Invalid request",
 			})
 		} else {
+			ctx := context.Request.Context()
+			span := trace.SpanFromContext(ctx)
 			span.AddEvent("Inserting data", trace.WithAttributes(
 				attribute.String("name", request.Name),
 			))

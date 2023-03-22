@@ -17,6 +17,9 @@ type opts struct {
 		Topic     string `short:"c" long:"topic" description:"kafka topic" env:"TOPIC"`
 		Partition int    `short:"p" long:"partition" description:"kafka partition" env:"PARTITION"`
 	} `group:"kafka" namespace:"kafka" env-namespace:"KAFKA"`
+	Executor struct {
+		BasePath string `short:"b" long:"base-path" description:"base path for executor" env:"BASE_PATH"`
+	} `group:"executor" namespace:"executor" env-namespace:"EXECUTOR"`
 }
 
 func ParseGlobalOpts() error {

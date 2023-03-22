@@ -1,7 +1,9 @@
 ### Send POST request with json body
 POST http://localhost:8080/data
 Content-Type: application/json
+X-Correlation-ID: 0ad1348f14031692
 
 {
-  "name": "test"
+  "name": "test",
+  "random": 5
 }

@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/google/uuid"
+	"encoding/json"
 	"github.com/segmentio/kafka-go"
 	"github.com/uptrace/opentelemetry-go-extra/otelzap"
 	"go.opentelemetry.io/otel"
@@ -13,12 +13,10 @@ import (
 )
 
 func sendMessage(request insertDataRequest, parentCtx context.Context) error {
-	conversationId := uuid.New().String()
 	currentContext, span := tracer.Start(parentCtx, "kafka.producer",
 		common.CreateRequiredKafkaOtelProducerAttributes(
 			common.GlobalOpts.Kafka.Topic,
 			0,
-			conversationId,
 		),
 		trace.WithSpanKind(trace.SpanKindProducer),
 	)
@@ -31,14 +29,19 @@ func sendMessage(request insertDataRequest, parentCtx context.Context) error {
 		common.GlobalOpts.Kafka.Partition,
 	)
 
-	message := createMessage(request, conversationId)
+	message, err := createMessage(request)
+	if err != nil {
+		otelzap.Ctx(parentCtx).Error("Error creating message", zap.Error(err))
+		span.RecordError(err)
+		return err
+	}
 	messageCarrier := opentelemetry.NewMessageCarrier(&message)
 	otel.GetTextMapPropagator().Inject(currentContext, messageCarrier)
 	common.WriteMessages(newConnection, []kafka.Message{
 		message,
 	})
 
-	err := newConnection.Close()
+	err = newConnection.Close()
 	if err != nil {
 		otelzap.Ctx(parentCtx).Error("Error sending message to kafka", zap.Error(err))
 		span.RecordError(err)
@@ -47,15 +50,13 @@ func sendMessage(request insertDataRequest, parentCtx context.Context) error {
 	return nil
 }
 
-func createMessage(request insertDataRequest, conversationId string) kafka.Message {
+func createMessage(request insertDataRequest) (kafka.Message, error) {
+	content, err := json.Marshal(request)
+	if err != nil {
+		return kafka.Message{}, err
+	}
 	return kafka.Message{
 		Key:   []byte("insert-data"),
-		Value: []byte(request.Name),
-		Headers: []kafka.Header{
-			{
-				Key:   "conversationId",
-				Value: []byte(conversationId),
-			},
-		},
-	}
+		Value: content,
+	}, nil
 }

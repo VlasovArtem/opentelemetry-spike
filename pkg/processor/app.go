@@ -2,18 +2,19 @@ package main
 
 import (
 	"github.com/rs/zerolog/log"
-	"github.com/uptrace/opentelemetry-go-extra/otelzap"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
-	"go.uber.org/zap"
 	"spike-go-opentelemetry-logging/pkg/common"
+	"sync"
 	"time"
 )
 
 const serviceName = "processor-app"
 
 type insertDataRequest struct {
-	name string
+	Name   string `json:"name"`
+	Random int    `json:"random"`
 }
 
 var tracer trace.Tracer
@@ -49,18 +50,28 @@ func main() {
 		}
 	}()
 
+	lock := sync.Mutex{}
+
 	for {
-		request, ctx, err := receiveRequest(connection)
-		if err != nil {
-			log.Error().Err(err)
-		} else {
-			parent, span := tracer.Start(ctx, "insertData")
-			err := insertData(parent, request.name)
+		if lock.TryLock() {
+			request, ctx, err := receiveRequest(connection)
 			if err != nil {
-				otelzap.Ctx(parent).Error("Error binding request", zap.Error(err))
-				span.RecordError(err)
+				log.Error().Err(err).Msg("Error receiving request")
+			} else {
+				parent, span := tracer.Start(ctx, "dataProcessing",
+					trace.WithSpanKind(trace.SpanKindServer),
+					trace.WithAttributes(
+						attribute.String("name", request.Name),
+						attribute.Int("random", request.Random),
+					),
+				)
+				err := insertData(parent, request)
+				if err == nil {
+					execute(parent, request)
+				}
+				span.End()
 			}
-			span.End()
+			lock.Unlock()
 		}
 		time.Sleep(1 * time.Second)
 	}

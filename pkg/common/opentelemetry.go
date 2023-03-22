@@ -49,12 +49,12 @@ func EnableTelemetry(serviceName string) func() error {
 	}
 }
 
-func otelKafkaDynamicAttributes(topic string, partition int, messageId string) []attribute.KeyValue {
+func otelKafkaDynamicAttributes(topic string, partition int) []attribute.KeyValue {
 	defaultAttributes := otelKafkaDefaultAttributes()
 
 	return append(defaultAttributes,
 		semconv.MessagingDestinationKey.String(topic),
-		semconv.MessagingMessageIDKey.String(messageId),
+		//semconv.MessagingMessageIDKey.String(messageId),
 		semconv.MessagingKafkaPartitionKey.Int(partition),
 	)
 }
@@ -66,13 +66,13 @@ func otelKafkaDefaultAttributes() []attribute.KeyValue {
 	}
 }
 
-func CreateRequiredKafkaOtelConsumerAttributes(topic string, partition int, messageId string) trace.SpanStartOption {
-	attributes := otelKafkaDynamicAttributes(topic, partition, messageId)
+func CreateRequiredKafkaOtelConsumerAttributes(topic string, partition int) trace.SpanStartOption {
+	attributes := otelKafkaDynamicAttributes(topic, partition)
 	attributes = append(attributes, semconv.MessagingOperationReceive)
 
 	return trace.WithAttributes(attributes...)
 }
 
-func CreateRequiredKafkaOtelProducerAttributes(topic string, partition int, messageId string) trace.SpanStartOption {
-	return trace.WithAttributes(otelKafkaDynamicAttributes(topic, partition, messageId)...)
+func CreateRequiredKafkaOtelProducerAttributes(topic string, partition int) trace.SpanStartOption {
+	return trace.WithAttributes(otelKafkaDynamicAttributes(topic, partition)...)
 }
