@@ -8,6 +8,8 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace"
 	"google.golang.org/grpc/credentials"
 	"io"
+	"spike-go-opentelemetry-logging/pkg/otel/exporters/otlp/otlplog"
+	"spike-go-opentelemetry-logging/pkg/otel/exporters/otlp/otlplog/otlploggrpc"
 )
 
 func NewWriterExporter(w io.Writer) (trace.SpanExporter, error) {
@@ -20,7 +22,7 @@ func NewWriterExporter(w io.Writer) (trace.SpanExporter, error) {
 	)
 }
 
-func NewGrpcExporter(collectorURL string, insecure bool) (trace.SpanExporter, error) {
+func NewGrpcTraceExporter(collectorURL string, insecure bool) (trace.SpanExporter, error) {
 	secureOption := otlptracegrpc.WithTLSCredentials(credentials.NewClientTLSFromCert(nil, ""))
 	if insecure {
 		secureOption = otlptracegrpc.WithInsecure()
@@ -31,6 +33,21 @@ func NewGrpcExporter(collectorURL string, insecure bool) (trace.SpanExporter, er
 		otlptracegrpc.NewClient(
 			secureOption,
 			otlptracegrpc.WithEndpoint(collectorURL),
+		),
+	)
+}
+
+func NewGrpcLogRecordsExporter(collectorURL string, insecure bool) (otlplog.LogExporter, error) {
+	secureOption := otlploggrpc.WithTLSCredentials(credentials.NewClientTLSFromCert(nil, ""))
+	if insecure {
+		secureOption = otlploggrpc.WithInsecure()
+	}
+
+	return otlplog.New(
+		context.Background(),
+		otlploggrpc.NewClient(
+			secureOption,
+			otlploggrpc.WithEndpoint(collectorURL),
 		),
 	)
 }

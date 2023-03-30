@@ -106,7 +106,7 @@ func EnableGlobalFileTracer(serviceName string) func(ctx context.Context) error 
 }
 
 func EnabledGlobalGrpcTracer(serviceName string, url string, insecure bool) func(ctx context.Context) error {
-	exporter, err := NewGrpcExporter(url, insecure)
+	exporter, err := NewGrpcTraceExporter(url, insecure)
 
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to create exporter")
