@@ -1,13 +1,15 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/uptrace/opentelemetry-go-extra/otelzap"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric/instrument"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
-	"net/http"
 )
 
 func initHandler(r *gin.Engine) {
@@ -19,6 +21,13 @@ func initHandler(r *gin.Engine) {
 
 func ping() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		counter, _ := meter.Int64Counter(
+			"some.prefix.counter",
+			instrument.WithUnit("1"),
+			instrument.WithDescription("TODO"),
+		)
+		counter.Add(c.Request.Context(), 1, attribute.String("name", "ping"))
+
 		otelzap.Ctx(c).Info("Ping")
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",

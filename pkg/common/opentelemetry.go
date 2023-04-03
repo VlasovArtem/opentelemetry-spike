@@ -2,11 +2,13 @@ package common
 
 import (
 	"context"
+
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	"go.opentelemetry.io/otel/attribute"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.opentelemetry.io/otel/trace"
+
 	"spike-go-opentelemetry-logging/pkg/opentelemetry"
 )
 
@@ -20,6 +22,11 @@ func EnableTelemetry(serviceName string) func() error {
 		log.Info().Msg("Starting application with file exporter. Check 'traces.txt' file for traces")
 	case "grpc":
 		tracerCloseFunc = opentelemetry.EnabledGlobalGrpcTracer(
+			serviceName,
+			GlobalOpts.Collector.Url,
+			GlobalOpts.Collector.Insecure,
+		)
+		opentelemetry.EnableGlobalGrpcMetric(
 			serviceName,
 			GlobalOpts.Collector.Url,
 			GlobalOpts.Collector.Insecure,

@@ -28,7 +28,7 @@ run: ## Run All Services
 	@docker-compose -f ./deployments/docker-compose.yml up -d
 
 runRequiredService: ## Run Required Services
-	@docker-compose -f ./deployments/docker-compose.yml up -d jaeger otel-collector zookeeper broker
+	@docker-compose -f ./deployments/docker-compose.yml up -d jaeger otel-collector zookeeper broker prometheus
 
 clean: ## Clean docker
 	@docker-compose -f ./deployments/docker-compose.yml down

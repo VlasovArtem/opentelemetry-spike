@@ -8,6 +8,8 @@ services:
       - "14250"
     environment:
       - LOG_LEVEL=debug
+      - METRICS_STORAGE_TYPE=prometheus
+      - PROMETHEUS_SERVER_URL=http://prometheus:9090
 
   otel-collector:
     image: otel/opentelemetry-collector
@@ -55,6 +57,14 @@ services:
       interval: 2s
       timeout: 5s
       retries: 15
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
 
   main:
     image: main-app:v0.0.1

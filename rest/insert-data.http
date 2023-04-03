@@ -7,3 +7,6 @@ X-Correlation-ID: 0ad1348f14031692
   "name": "test",
   "random": 5
 }
+
+### Ping
+GET http://localhost:8080/ping

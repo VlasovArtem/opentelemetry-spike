@@ -5,6 +5,10 @@ import (
 	crand "crypto/rand"
 	"encoding/binary"
 	"encoding/hex"
+	"math/rand"
+	"os"
+	"sync"
+
 	"github.com/rs/zerolog/log"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -13,9 +17,6 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.18.0"
 	"go.opentelemetry.io/otel/trace"
-	"math/rand"
-	"os"
-	"sync"
 )
 
 const traceHeaderName = "X-Correlation-ID"
